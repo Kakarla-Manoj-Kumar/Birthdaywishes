@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Birthday Wishes – Anna 🎉</title>
+  <style>
+    :root {
+      --bg: #0f1226;
+      --card: #15193a;
+      --accent: #ffd166;
+      --text: #f7f7fb;
+      --muted: #9aa3b2;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 800px at 70% -10%, #2a3072 0%, transparent 60%),
+                  radial-gradient(900px 600px at -10% 20%, #1d2154 0%, transparent 60%),
+                  var(--bg);
+      color: var(--text);
+      overflow: hidden; /* allow fireworks/confetti to overlay */
+    }
+
+    .container {
+      position: relative;
+      height: 100dvh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      isolation: isolate; /* keep overlays behind content */
+    }
+
+    .card {
+      width: min(720px, 96vw);
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+      padding: 28px 28px 32px;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(26px, 4.5vw, 40px);
+      letter-spacing: 0.3px;
+    }
+
+    p.subtitle {
+      margin: 0 0 24px;
+      color: var(--muted);
+      font-size: clamp(14px, 2.8vw, 16px);
+    }
+
+    .big-message {
+      font-size: clamp(22px, 5vw, 36px);
+      line-height: 1.25;
+      font-weight: 700;
+      margin: 18px 0 0;
+      opacity: 0;
+      transform: translateY(6px) scale(0.98);
+      transition: opacity 500ms ease, transform 600ms ease;
+      text-shadow: 0 2px 0 rgba(0,0,0,0.15);
+      letter-spacing: 0.2px;
+    }
+
+    .emojis {
+      font-size: clamp(22px, 5vw, 36px);
+      margin-top: 10px;
+      opacity: 0;
+      transform: translateY(6px) scale(0.98);
+      transition: opacity 500ms ease 60ms, transform 600ms ease 60ms;
+    }
+
+    .show { opacity: 1; transform: translateY(0) scale(1); }
+
+    .btn {
+      margin-top: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 16px;
+      padding: 14px 20px;
+      border-radius: 999px;
+      border: 0;
+      cursor: pointer;
+      color: #121212;
+      background: linear-gradient(135deg, #ffd166, #ff9f1c);
+      box-shadow: 0 10px 24px rgba(255, 209, 102, 0.35);
+      transition: transform 160ms ease, filter 160ms ease, box-shadow 200ms ease;
+    }
+    .btn:hover { transform: translateY(-2px); filter: brightness(1.02); }
+    .btn:active { transform: translateY(0); }
+
+    /* Canvas overlay for confetti */
+    #confettiCanvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    /* Side fireworks (CSS only) */
+    .firework {
+      position: fixed;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      background: transparent;
+      z-index: 9;
+      filter: drop-shadow(0 0 6px rgba(255,255,255,0.8));
+    }
+    .firework.left { left: -20px; }
+    .firework.right { right: -20px; }
+
+    /* spark particles */
+    .firework i {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.2);
+      animation: burst 1000ms ease-out forwards;
+    }
+
+    @keyframes burst {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2); }
+      10% { opacity: 1; }
+      100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(1); }
+    }
+
+    /* Floating confetti background (gentle, always-on) */
+    .floating-confetti {
+      position: fixed; inset: 0; pointer-events: none; z-index: 1;
+      background-image:
+        radial-gradient(6px 6px at 10% 20%, rgba(255,255,255,0.18) 50%, transparent 51%),
+        radial-gradient(6px 6px at 80% 30%, rgba(255,255,255,0.12) 50%, transparent 51%),
+        radial-gradient(6px 6px at 40% 80%, rgba(255,255,255,0.16) 50%, transparent 51%);
+      background-repeat: no-repeat;
+      animation: drift 10s linear infinite;
+    }
+    @keyframes drift {
+      0% { background-position: 10% -10%, 80% -20%, 40% -15%; }
+      100% { background-position: 10% 110%, 80% 120%, 40% 115%; }
+    }
+
+    footer { position: fixed; bottom: 10px; left: 0; right: 0; text-align: center; color: #cbd1dc; font-size: 12px; opacity: 0.8; }
+  </style>
+</head>
+<body>
+  <canvas id="confettiCanvas" aria-hidden="true"></canvas>
+  <div class="floating-confetti" aria-hidden="true"></div>
+  <div class="firework left" aria-hidden="true"></div>
+  <div class="firework right" aria-hidden="true"></div>
+
+  <div class="container">
+    <div class="card" role="group" aria-label="Birthday Wish">
+      <h1>🎉 Celebrate!</h1>
+      <p class="subtitle">Click the below button Salman Anna ✨</p>
+      <button class="btn" id="celebrateBtn" aria-label="Start celebration">🎈 Click to Celebrate</button>
+
+      <div class="big-message" id="message" aria-live="polite" aria-atomic="true">
+        Wish you many more happy returns of the day, <strong> Salman Anna</strong>!
+      </div>
+      <div class="emojis" id="emojis">🎉 🎂 🎈 ✨ 🥳 🍰 🎁 🎊</div>
+    </div>
+  </div>
+
+  <footer>Made with ❤️ for Salman Anna</footer>
+
+  <script>
+    const btn = document.getElementById('celebrateBtn');
+    const message = document.getElementById('message');
+    const emojis = document.getElementById('emojis');
+
+    // Confetti canvas setup
+    const canvas = document.getElementById('confettiCanvas');
+    const ctx = canvas.getContext('2d');
+    let W = canvas.width = window.innerWidth;
+    let H = canvas.height = window.innerHeight;
+    window.addEventListener('resize', () => {
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    });
+
+    const COLORS = [
+      '#ff4757', '#ff6b81', '#ffa502', '#ffcc00', '#2ed573', '#1e90ff', '#5352ed', '#a55eea', '#ffffff'
+    ];
+
+    function random(min, max) { return Math.random() * (max - min) + min; }
+
+    class Confetto {
+      constructor(x, y, burst=1) {
+        this.x = x; this.y = y;
+        const angle = random(-Math.PI/1.2, Math.PI/1.2);
+        const speed = random(6, 11) * burst;
+        this.vx = Math.cos(angle) * speed;
+        this.vy = Math.sin(angle) * speed - random(2, 6);
+        this.size = random(5, 10);
+        this.color = COLORS[(Math.random()*COLORS.length)|0];
+        this.rotation = random(0, Math.PI*2);
+        this.spin = random(-0.3, 0.3);
+        this.gravity = 0.25;
+        this.air = 0.997;
+        this.life = 0;
+        this.maxLife = random(80, 140);
+        this.shape = Math.random() < 0.5 ? 'rect' : 'circle';
+      }
+      step() {
+        this.life++;
+        this.vx *= this.air;
+        this.vy = this.vy * this.air + this.gravity;
+        this.x += this.vx;
+        this.y += this.vy;
+        this.rotation += this.spin;
+        return this.life < this.maxLife && this.y < H + 20 && this.x > -20 && this.x < W + 20;
+      }
+      draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
+        ctx.globalAlpha = 0.9;
+        ctx.fillStyle = this.color;
+        if (this.shape === 'rect') {
+          ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size*0.6);
+        } else {
+          ctx.beginPath();
+          ctx.arc(0, 0, this.size/2, 0, Math.PI*2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+    }
+
+    let confetti = [];
+    let animating = false;
+
+    function burstAt(x, y, amount = 160, power = 1) {
+      for (let i = 0; i < amount; i++) confetti.push(new Confetto(x, y, power));
+      startAnimation();
+    }
+
+    function sideBursts() {
+      // left & right side cascades
+      const rows = 5;
+      for (let i = 0; i < rows; i++) {
+        const y = (H / (rows + 1)) * (i + 1);
+        burstAt(20, y, 40, 0.9);
+        burstAt(W - 20, y, 40, 0.9);
+      }
+    }
+
+    function startAnimation() {
+      if (animating) return;
+      animating = true;
+      (function loop() {
+        if (!animating) return;
+        ctx.clearRect(0, 0, W, H);
+        confetti = confetti.filter(c => {
+          const alive = c.step();
+          c.draw(ctx);
+          return alive;
+        });
+        if (confetti.length === 0) animating = false; // stop when done
+        requestAnimationFrame(loop);
+      })();
+    }
+
+    function createCSSFirework(sideEl) {
+      // generate spark elements with unique directions
+      sideEl.innerHTML = '';
+      const count = 16;
+      for (let i = 0; i < count; i++) {
+        const spark = document.createElement('i');
+        const angle = (Math.PI * 2 * i) / count;
+        const radius = 110 + Math.random()*40;
+        const tx = Math.cos(angle) * radius;
+        const ty = Math.sin(angle) * radius;
+        spark.style.setProperty('--tx', `${tx}px`);
+        spark.style.setProperty('--ty', `${ty}px`);
+        spark.style.width = spark.style.height = `${6 + Math.random()*6}px`;
+        spark.style.background = COLORS[(Math.random()*COLORS.length)|0];
+        sideEl.appendChild(spark);
+      }
+    }
+
+    function celebrate() {
+      // Show text & emojis
+      message.classList.add('show');
+      emojis.classList.add('show');
+
+      // Central blast + side cascades
+      burstAt(W/2, H*0.35, 220, 1.2);
+      setTimeout(sideBursts, 150);
+
+      // CSS fireworks on sides
+      createCSSFirework(document.querySelector('.firework.left'));
+      createCSSFirework(document.querySelector('.firework.right'));
+
+      // disabled button after first celebration (toggleable if you want repeat)
+      btn.disabled = true;
+      btn.textContent = '🎊 Celebrating!';
+      btn.setAttribute('aria-disabled', 'true');
+
+      // Re-enable after a short while to celebrate again if needed
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.textContent = '🎈 Celebrate Again';
+        btn.removeAttribute('aria-disabled');
+      }, 2500);
+    }
+
+    btn.addEventListener('click', celebrate);
+
+    // Optional: trigger with Space/Enter for accessibility
+    document.addEventListener('keydown', (e) => {
+      if ((e.code === 'Space' || e.code === 'Enter') && !btn.disabled) {
+        e.preventDefault();
+        celebrate();
+      }
+    });
+  </script>
+</body>
+</html>
